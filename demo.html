@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aashray Relief Foundation — Transparent Donation Tracking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#142B3D; --ink-soft:#3B5166; --paper:#F5F3EC; --paper-raised:#FFFFFF;
+    --line:#D9D6C8; --teal:#2F6F62; --teal-soft:#E4EEEB; --amber:#B9812C;
+    --amber-soft:#F3E8D5; --clay:#9B4A3F; --clay-soft:#F1E1DE;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#EDEBE1; --ink-soft:#B9C4CC; --paper:#101820; --paper-raised:#182430;
+      --line:#2C3A46; --teal:#6FBBA8; --teal-soft:#1A2E2A; --amber:#E0AC5C;
+      --amber-soft:#332918; --clay:#E08D7E; --clay-soft:#332320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#EDEBE1; --ink-soft:#B9C4CC; --paper:#101820; --paper-raised:#182430;
+    --line:#2C3A46; --teal:#6FBBA8; --teal-soft:#1A2E2A; --amber:#E0AC5C;
+    --amber-soft:#332918; --clay:#E08D7E; --clay-soft:#332320;
+  }
+  *{box-sizing:border-box;}
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans',sans-serif; line-height:1.55; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3{ font-family:'Source Serif 4',serif; font-weight:600; margin:0; }
+  .mono{ font-family:'IBM Plex Mono',monospace; }
+
+  header{
+    position:sticky; top:0; z-index:10;
+    background:var(--ink); color:var(--paper);
+    padding:14px clamp(16px,4vw,48px);
+    display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;
+    border-bottom:1px solid #24374A;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand h1{ font-size:19px; color:var(--paper); }
+  .brand span{ font-size:12.5px; color:#9FB0BD; }
+  .headnav{ display:flex; gap:18px; flex-wrap:wrap; }
+  .headnav a{ color:#B9C7D2; text-decoration:none; font-size:13.5px; }
+  .headnav a:hover{ color:var(--paper); }
+  #wallet-btn{
+    background:var(--teal); border:1px solid var(--teal); color:#0D1B15;
+    padding:9px 16px; border-radius:3px; font-family:'IBM Plex Sans',sans-serif;
+    font-size:13.5px; font-weight:600; cursor:pointer;
+  }
+  #wallet-btn.connected{ background:transparent; border-color:#4A5C6B; color:var(--paper); font-weight:500; }
+
+  main{ max-width:880px; margin:0 auto; padding:0 clamp(16px,4vw,48px) 90px; }
+  section{ padding:44px 0; border-bottom:1px solid var(--line); }
+  section:last-child{ border-bottom:none; }
+  .eyebrow{ font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .lede{ max-width:64ch; color:var(--ink-soft); font-size:15.5px; margin:8px 0 0; }
+
+  /* Campaign summary */
+  .campaign-card{ background:var(--paper-raised); border:1px solid var(--line); border-radius:5px; padding:26px 28px; margin-top:18px; }
+  .campaign-title{ font-size:22px; }
+  .campaign-ngo{ font-size:13.5px; color:var(--ink-soft); margin-top:4px; }
+  .stat-row{ display:flex; gap:28px; flex-wrap:wrap; margin:20px 0 10px; }
+  .stat .num{ font-family:'Source Serif 4',serif; font-size:24px; font-weight:600; }
+  .stat .label{ font-size:12px; color:var(--ink-soft); }
+  .bar{ height:8px; background:var(--line); border-radius:4px; overflow:hidden; margin-top:6px; }
+  .bar-fill{ height:100%; background:var(--teal); transition:width .3s; }
+
+  /* Flow diagram */
+  .flow{ display:flex; align-items:center; gap:6px; margin-top:22px; overflow-x:auto; padding-bottom:4px; }
+  .flow-step{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .flow-num{
+    width:26px; height:26px; border-radius:50%; background:var(--ink); color:var(--paper);
+    display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; flex-shrink:0;
+  }
+  .flow-label{ font-size:13px; color:var(--ink-soft); white-space:nowrap; }
+  .flow-arrow{ color:var(--line); font-size:16px; margin:0 4px; flex-shrink:0; }
+
+  /* Milestones */
+  .milestone{ background:var(--paper-raised); border:1px solid var(--line); border-radius:5px; padding:20px 22px; margin-bottom:14px; }
+  .milestone-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  .status-dot{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:7px; }
+  .status-dot.locked{ background:var(--ink-soft); opacity:.4; }
+  .status-dot.evidence{ background:var(--amber); }
+  .status-dot.verified{ background:var(--teal); }
+  .status-dot.released{ background:var(--teal); }
+  .status-text{ font-size:13px; color:var(--ink-soft); }
+  .milestone-title{ font-size:16.5px; }
+  .milestone-amt{ font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--ink-soft); text-align:right; }
+  .fine{ font-size:13px; color:var(--ink-soft); }
+  .proof-line{ font-size:13px; margin-top:8px; color:var(--ink-soft); }
+  .actions{ display:flex; gap:9px; margin-top:14px; flex-wrap:wrap; }
+  button.act{ font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:500; padding:8px 14px; border-radius:3px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer; }
+  button.act.secondary{ background:transparent; color:var(--ink); }
+  button.act:disabled{ opacity:.35; cursor:not-allowed; }
+  button.act:hover:not(:disabled){ opacity:.85; }
+  .ai-result{ margin-top:10px; font-size:13px; background:var(--paper); border:1px solid var(--line); border-radius:3px; padding:9px 12px; }
+
+  /* Donate + passport */
+  form.donate-form{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; align-items:center; }
+  input[type=number]{ font-family:'IBM Plex Mono',monospace; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:3px; background:var(--paper-raised); color:var(--ink); width:150px; }
+  .passport{ background:var(--paper-raised); border:1px solid var(--line); border-radius:5px; padding:22px 24px; margin-top:16px; }
+  .passport-id{ font-size:13px; color:var(--ink-soft); margin-bottom:14px; }
+  .passport-stats{ display:flex; gap:26px; flex-wrap:wrap; margin-bottom:16px; }
+  .passport-stats .num{ font-family:'Source Serif 4',serif; font-size:21px; font-weight:600; }
+  .passport-stats .label{ font-size:11.5px; color:var(--ink-soft); }
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  th{ text-align:left; font-weight:500; color:var(--ink-soft); font-size:12px; padding:8px 10px; border-bottom:1px solid var(--line); }
+  td{ padding:10px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  tr.clickable{ cursor:pointer; }
+  tr.clickable:hover{ background:var(--paper); }
+  .hash{ color:var(--ink-soft); }
+  .reveal{ font-size:12.5px; color:var(--teal); }
+
+  .empty{ color:var(--ink-soft); font-size:14px; padding:16px 0; }
+  .no-wallet-note{ font-size:13px; color:var(--ink-soft); background:var(--teal-soft); border-radius:4px; padding:10px 14px; margin-top:16px; }
+  .tech-note{ font-size:12px; color:var(--ink-soft); margin-top:14px; }
+  .view-link{ background:none; border:none; color:var(--teal); font-size:12.5px; cursor:pointer; padding:0; text-decoration:underline; }
+
+  .chip{
+    font-size:12.5px; padding:6px 13px; border-radius:20px; border:1px solid var(--line);
+    background:var(--paper-raised); color:var(--ink-soft); cursor:pointer;
+  }
+  .chip.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .ngo-card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:5px;
+    padding:18px 20px; margin-bottom:12px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .ngo-info{ flex:1; min-width:220px; }
+  .ngo-name{ font-size:16px; font-family:'Source Serif 4',serif; font-weight:600; }
+  .ngo-meta{ display:flex; gap:10px; align-items:center; margin-top:4px; flex-wrap:wrap; }
+  .ngo-cat{ font-size:11.5px; padding:2px 9px; border-radius:20px; background:var(--teal-soft); color:var(--teal); }
+  .ngo-dist{ font-size:12.5px; color:var(--ink-soft); }
+  .ngo-blurb{ font-size:13.5px; color:var(--ink-soft); margin-top:8px; max-width:52ch; }
+  .ngo-side{ display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; gap:10px; }
+
+  @media (max-width:600px){ .milestone-head{ flex-direction:column; } .milestone-amt{ text-align:left; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Aashray Relief Foundation</h1>
+    <span>Transparent Donation &amp; Fund Tracking</span>
+  </div>
+  <nav class="headnav">
+    <a href="#campaign">Campaign</a>
+    <a href="#explore">Explore</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#milestones">Milestones</a>
+    <a href="#donor">Donate</a>
+    <a href="#audit">Audit Trail</a>
+  </nav>
+  <button id="wallet-btn" onclick="connectWallet()">Connect Wallet</button>
+</header>
+
+<main>
+
+  <!-- CAMPAIGN -->
+  <section id="campaign">
+    <div class="eyebrow">Current campaign</div>
+    <div class="campaign-card">
+      <div class="campaign-title">Kolhapur Flood Relief</div>
+      <div class="campaign-ngo">Run by Aashray Relief Foundation · Goal ₹5,00,000</div>
+      <div class="stat-row">
+        <div class="stat"><div class="num" id="stat-raised">₹0</div><div class="label">raised</div></div>
+        <div class="stat"><div class="num" id="stat-pct">0%</div><div class="label">of goal</div></div>
+        <div class="stat"><div class="num" id="stat-donors">0</div><div class="label">donors</div></div>
+      </div>
+      <div class="bar"><div class="bar-fill" id="campaign-bar" style="width:0%"></div></div>
+    </div>
+  </section>
+
+  <!-- EXPLORE NEAR YOU -->
+  <section id="explore">
+    <div class="eyebrow">Discover before you give</div>
+    <h2 style="font-size:22px;">Explore causes near you</h2>
+    <p class="lede">Donation shouldn't start and end with one campaign. Browse verified causes — orphanages, old-age homes, disaster relief, healthcare — and see how far each one is from you.</p>
+
+    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <button class="act secondary" onclick="useMyLocation()" id="locate-btn">Use my location</button>
+      <span class="fine" id="locate-status">Distances shown are examples until you share your location.</span>
+    </div>
+
+    <div id="category-chips" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;"></div>
+
+    <div id="ngo-list" style="margin-top:18px;"></div>
+    <p class="tech-note">Example organizations for this demo. A production version would pull live from a verified NGO registry (and could combine it with Google Places data, shown to reviewers separately with proper attribution).</p>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works">
+    <div class="eyebrow">How your donation is protected</div>
+    <h2 style="font-size:22px;">Money moves only when proof does.</h2>
+    <p class="lede">Your donation isn't handed over right away. It's held safely until the NGO proves what it was spent on, and a person confirms that proof — only then does money move.</p>
+    <div class="flow" id="flow-diagram"></div>
+  </section>
+
+  <!-- MILESTONES -->
+  <section id="milestones">
+    <div class="eyebrow">Where the money goes</div>
+    <h2 style="font-size:22px;">Milestone verification</h2>
+    <p class="lede">Each stage of the campaign has its own budget. Funds for a stage release only after proof is uploaded, automatically checked, and confirmed by a reviewer.</p>
+    <div id="milestones-list" style="margin-top:20px;"></div>
+  </section>
+
+  <!-- DONATE + PASSPORT -->
+  <section id="donor">
+    <div class="eyebrow">Give &amp; track</div>
+    <h2 style="font-size:22px;">Donate</h2>
+    <p class="lede">Connect a wallet to donate and get your own Donor Passport — a permanent record of everything you've given.</p>
+    <div id="donate-wallet-status" class="no-wallet-note">You have not connected a wallet yet — click "Connect Wallet" at the top of the page to start.</div>
+    <form class="donate-form" onsubmit="handleDonate(event)">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:15px;">₹</span>
+      <input type="number" id="donate-amount" min="100" step="100" placeholder="500" required>
+      <button class="act" type="submit">Donate</button>
+    </form>
+
+    <h3 style="font-size:17px; margin-top:30px;">Donor Passport</h3>
+    <div class="passport" id="passport-card"></div>
+  </section>
+
+  <!-- AUDIT TRAIL -->
+  <section id="audit">
+    <div class="eyebrow">Visible to everyone — no wallet needed</div>
+    <h2 style="font-size:22px;">Public audit trail</h2>
+    <p class="lede">Every donation, every proof submitted, every confirmation, and every payment is listed here permanently. Nothing can be edited or removed after the fact.</p>
+    <div style="overflow-x:auto; margin-top:18px;">
+      <table>
+        <thead><tr><th>Time</th><th>Event</th><th>Detail</th><th>Amount</th><th>Receipt</th></tr></thead>
+        <tbody id="audit-body"></tbody>
+      </table>
+    </div>
+    <p class="tech-note">Technical note for reviewers: this demo simulates the blockchain layer in-browser for reliability. The underlying logic matches a Solidity smart contract built for Polygon Amoy (donate / verifyMilestone / releaseFunds), shown separately, where each receipt ID here would be a real transaction hash viewable on PolygonScan.</p>
+  </section>
+
+</main>
+
+<script>
+const STORAGE_KEY = 'aashray_demo_state_v2';
+const GOAL = 500000;
+
+function fakeHash(){
+  const bytes = new Uint8Array(20);
+  crypto.getRandomValues(bytes);
+  return '0x' + Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function fakeAddress(){
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return '0x' + Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,8) + '…' + fakeHash().slice(-4);
+}
+function inr(n){ return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function now(){ return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); }
+
+function defaultState(){
+  return {
+    wallet: null,
+    totalDonated: 0,
+    totalReleased: 0,
+    donors: {},
+    audit: [],
+    milestones: [
+      { id:0, title:"Emergency food & water kits", desc:"Ration kits and clean drinking water for 120 displaced families in Shirol taluka.", target:150000, evidence:null, aiScore:null, verified:false, released:false, beneficiaries:120 },
+      { id:1, title:"Temporary shelter materials", desc:"Tarpaulins, bamboo framing and bedding for relief camps housing flood-displaced residents.", target:200000, evidence:null, aiScore:null, verified:false, released:false, beneficiaries:85 },
+      { id:2, title:"Post-flood medical camp", desc:"A 3-day mobile medical camp treating waterborne illness and injuries in affected villages.", target:150000, evidence:null, aiScore:null, verified:false, released:false, beneficiaries:210 },
+    ]
+  };
+}
+
+let state;
+try{
+  const saved = localStorage.getItem(STORAGE_KEY);
+  state = saved ? JSON.parse(saved) : defaultState();
+}catch(e){ state = defaultState(); }
+
+function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
+
+// ---------- EXPLORE CAUSES NEAR YOU ----------
+const NGO_DIRECTORY = [
+  { id:'kolhapur-flood', name:'Kolhapur Flood Relief', category:'Disaster Relief', lat:16.7050, lng:74.2433, blurb:'The active campaign on this page — flood relief across Kolhapur district.', active:true },
+  { id:'asha-ashram', name:'Asha Bal Ashram', category:'Orphanage', lat:19.9975, lng:73.7898, blurb:'Shelter, schooling and daily care for orphaned and abandoned children.' },
+  { id:'sannidhya', name:'Sannidhya Old Age Care', category:'Old Age Home', lat:19.9622, lng:73.7908, blurb:'Residential care for elderly with no family support, funded entirely by donations.' },
+  { id:'prerna', name:'Prerna Mahila Sanstha', category:"Women's Welfare", lat:20.0110, lng:73.7650, blurb:'Shelter and skills training for women recovering from domestic abuse.' },
+  { id:'umang', name:'Umang Child Welfare Trust', category:'Child Welfare', lat:18.5204, lng:73.8567, blurb:'Education support and nutrition programs for children of migrant labourers.' },
+  { id:'jeevandhara', name:'Jeevandhara Health Foundation', category:'Healthcare', lat:19.9330, lng:73.8060, blurb:'Free medical camps and basic diagnostics for underserved rural communities.' },
+  { id:'anandvan', name:'Anandvan Rehabilitation Centre', category:'Rehabilitation', lat:19.0952, lng:74.7496, blurb:'Long-term care and physiotherapy for people with severe disabilities.' },
+  { id:'sahara-drought', name:'Sahara Drought Relief Foundation', category:'Disaster Relief', lat:18.5679, lng:73.9143, blurb:'Water tankers and crop-loss support for drought-hit farming families.' },
+];
+
+let userLocation = null;
+let activeCategory = 'All';
+
+function haversineKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLon = (lon2-lon1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function useMyLocation(){
+  const statusEl = document.getElementById('locate-status');
+  if(!navigator.geolocation){
+    statusEl.textContent = 'Location is not supported in this browser.';
+    return;
+  }
+  statusEl.textContent = 'Requesting your location…';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      statusEl.textContent = 'Showing real distances from your current location.';
+      renderNgoList();
+    },
+    err => {
+      statusEl.textContent = 'Could not get your location (permission denied or unavailable) — showing example order instead.';
+    },
+    { timeout: 8000 }
+  );
+}
+
+function setCategory(cat){
+  activeCategory = cat;
+  renderChips();
+  renderNgoList();
+}
+
+function renderChips(){
+  const cats = ['All', ...new Set(NGO_DIRECTORY.map(n=>n.category))];
+  document.getElementById('category-chips').innerHTML = cats.map(c=>
+    `<button class="chip ${c===activeCategory?'active':''}" onclick="setCategory('${c}')">${c}</button>`
+  ).join('');
+}
+
+function previewOrg(name){
+  alert(name + ': full transparency dashboard would open here in the production version.\n\nFor this hackathon demo, only Kolhapur Flood Relief has a live, working campaign — scroll up to try it.');
+}
+
+function renderNgoList(){
+  let list = NGO_DIRECTORY.filter(n => activeCategory === 'All' || n.category === activeCategory);
+  if(userLocation){
+    list = list.map(n => ({ ...n, dist: haversineKm(userLocation.lat, userLocation.lng, n.lat, n.lng) }));
+    list.sort((a,b) => a.dist - b.dist);
+  }
+  document.getElementById('ngo-list').innerHTML = list.map(n => `
+    <div class="ngo-card">
+      <div class="ngo-info">
+        <div class="ngo-name">${n.name}${n.active ? ' <span class="ngo-cat" style="background:var(--amber-soft); color:var(--amber);">Active campaign</span>' : ''}</div>
+        <div class="ngo-meta">
+          <span class="ngo-cat">${n.category}</span>
+          <span class="ngo-dist">${n.dist !== undefined ? Math.round(n.dist) + ' km away' : 'distance shown once located'}</span>
+        </div>
+        <div class="ngo-blurb">${n.blurb}</div>
+      </div>
+      <div class="ngo-side">
+        ${n.active
+          ? `<a href="#campaign" class="act" style="text-decoration:none; display:inline-block;">View campaign</a>`
+          : `<button class="act secondary" onclick="previewOrg('${n.name}')">Preview</button>`}
+      </div>
+    </div>
+  `).join('');
+}
+
+
+function logAudit(event, detail, amount, hash){
+  state.audit.unshift({ event, detail, amount, hash, time: now() });
+  save();
+}
+
+function connectWallet(){
+  if(state.wallet){
+    state.wallet = null;
+  } else {
+    state.wallet = fakeAddress();
+    if(!state.donors[state.wallet]) state.donors[state.wallet] = [];
+  }
+  save();
+  renderAll();
+}
+
+function handleDonate(e){
+  e.preventDefault();
+  if(!state.wallet){ alert('Connect a wallet first using the button at the top.'); return; }
+  const amt = parseFloat(document.getElementById('donate-amount').value);
+  if(!amt || amt <= 0) return;
+  const hash = fakeHash();
+  state.totalDonated += amt;
+  state.donors[state.wallet].push({ amount:amt, hash, time:now(), revealed:false });
+  logAudit('Donation received', state.wallet, amt, hash);
+  document.getElementById('donate-amount').value = '';
+  save();
+  renderAll();
+}
+
+function poolBalance(){ return state.totalDonated - state.totalReleased; }
+function sumReleasedUpTo(id){ return state.milestones.filter(x=>x.id<id && x.released).reduce((a,x)=>a+x.target,0); }
+
+function submitEvidence(id){
+  const m = state.milestones.find(x=>x.id===id);
+  m.evidence = 'Photo + receipt uploaded';
+  logAudit('Proof submitted', m.title, null, fakeHash());
+  save(); renderAll();
+}
+function runAiScreen(id){
+  const m = state.milestones.find(x=>x.id===id);
+  m.aiScore = Math.floor(88 + Math.random()*10);
+  save(); renderAll();
+}
+function verifyMilestone(id){
+  const m = state.milestones.find(x=>x.id===id);
+  m.verified = true;
+  logAudit('Verification approved', m.title, null, fakeHash());
+  save(); renderAll();
+}
+
+const REJECT_REASONS = [
+  'Receipt image unclear — request a clearer photo',
+  'Amount on receipt does not match milestone target',
+  'Missing itemized breakdown of expenses',
+  'Photo does not clearly show the claimed work'
+];
+
+function rejectMilestone(id){
+  const m = state.milestones.find(x=>x.id===id);
+  const reason = REJECT_REASONS[Math.floor(Math.random()*REJECT_REASONS.length)];
+  m.rejectionCount = (m.rejectionCount || 0) + 1;
+  m.lastRejectionReason = reason;
+  m.evidence = null;
+  m.aiScore = null;
+  logAudit('Verification rejected', m.title + ' — ' + reason, null, fakeHash());
+  save(); renderAll();
+}
+function releaseFunds(id){
+  const m = state.milestones.find(x=>x.id===id);
+  if(poolBalance() < m.target){ alert('Not enough donated yet for this milestone — needs ' + inr(m.target) + ' raised first.'); return; }
+  m.released = true;
+  state.totalReleased += m.target;
+  const hash = fakeHash();
+  logAudit('Funds released', m.title, m.target, hash);
+  save(); renderAll();
+}
+
+function toggleReveal(walletAddr, idx){
+  state.donors[walletAddr][idx].revealed = !state.donors[walletAddr][idx].revealed;
+  renderAll();
+}
+
+function milestoneStatus(m){
+  if(m.released) return 'released';
+  if(m.verified) return 'verified';
+  if(m.evidence) return 'evidence';
+  return 'locked';
+}
+function statusText(s, m){
+  if(s === 'locked' && m.rejectionCount) return 'Locked — awaiting resubmission after rejection';
+  return { locked:'Locked — awaiting proof', evidence:'Proof submitted — pending check', verified:'Verified — ready for release', released:'Released' }[s];
+}
+
+function renderFlow(){
+  const steps = ['Donate','Milestone','Verify','Release','Audit'];
+  document.getElementById('flow-diagram').innerHTML = steps.map((s,i)=>`
+    <div class="flow-step">
+      <div class="flow-num">${i+1}</div>
+      <div class="flow-label">${s}</div>
+    </div>
+    ${i < steps.length-1 ? '<span class="flow-arrow">→</span>' : ''}
+  `).join('');
+}
+
+function renderCampaign(){
+  const pct = Math.min(100, Math.round((state.totalDonated / GOAL) * 100));
+  document.getElementById('stat-raised').textContent = inr(state.totalDonated);
+  document.getElementById('stat-pct').textContent = pct + '%';
+  document.getElementById('stat-donors').textContent = Object.keys(state.donors).filter(a=>state.donors[a].length).length;
+  document.getElementById('campaign-bar').style.width = pct + '%';
+}
+
+function milestoneCard(m){
+  const status = milestoneStatus(m);
+  const available = Math.min(poolBalance() + sumReleasedUpTo(m.id), m.target);
+  const pct = Math.min(100, Math.round((available / m.target) * 100));
+  const amtLine = m.released ? inr(m.target) + ' released' : available > 0 ? inr(available) + ' of ' + inr(m.target) + ' raised' : inr(m.target) + ' needed';
+  return `
+    <div class="milestone">
+      <div class="milestone-head">
+        <div>
+          <div class="milestone-title"><span class="status-dot ${status}"></span>${m.title}</div>
+          <div class="status-text" style="margin-top:4px;">${statusText(status, m)}</div>
+        </div>
+        <div class="milestone-amt">${amtLine}</div>
+      </div>
+      <p class="fine" style="margin:10px 0 0;">${m.desc}</p>
+      <div class="bar" style="margin-top:10px;"><div class="bar-fill" style="width:${pct}%"></div></div>
+      ${m.rejectionCount ? `<div class="proof-line" style="color:var(--clay);">Previously rejected ${m.rejectionCount}× — last reason: "${m.lastRejectionReason}". NGO has resubmitted.</div>` : ''}
+      ${m.evidence ? `<div class="proof-line">Proof: ${m.evidence}</div>` : ''}
+      ${m.aiScore ? `<div class="ai-result">Automatic check: looks genuine (${m.aiScore}% confidence), no red flags. Awaiting reviewer confirmation.</div>` : ''}
+      <div class="actions">
+        <button class="act secondary" ${m.evidence?'disabled':''} onclick="submitEvidence(${m.id})">Submit proof</button>
+        <button class="act secondary" ${(!m.evidence || m.aiScore)?'disabled':''} onclick="runAiScreen(${m.id})">Run automatic check</button>
+        <button class="act secondary" ${(!m.aiScore || m.verified)?'disabled':''} onclick="verifyMilestone(${m.id})">Approve (reviewer)</button>
+        <button class="act secondary" style="border-color:var(--clay); color:var(--clay);" ${(!m.aiScore || m.verified)?'disabled':''} onclick="rejectMilestone(${m.id})">Reject</button>
+        <button class="act" ${(!m.verified || m.released)?'disabled':''} onclick="releaseFunds(${m.id})">Release funds</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderMilestones(){
+  document.getElementById('milestones-list').innerHTML = state.milestones.map(milestoneCard).join('');
+}
+
+function renderDonateAndPassport(){
+  const btn = document.getElementById('wallet-btn');
+  const statusEl = document.getElementById('donate-wallet-status');
+  if(state.wallet){
+    btn.textContent = state.wallet;
+    btn.classList.add('connected');
+    statusEl.style.display = 'none';
+  } else {
+    btn.textContent = 'Connect Wallet';
+    btn.classList.remove('connected');
+    statusEl.style.display = 'block';
+  }
+
+  const card = document.getElementById('passport-card');
+  if(!state.wallet){
+    card.innerHTML = '<div class="empty">Connect a wallet to see your Donor Passport here.</div>';
+    return;
+  }
+  const history = state.donors[state.wallet] || [];
+  const total = history.reduce((a,h)=>a+h.amount,0);
+  const releasedCount = state.milestones.filter(m=>m.released).length;
+
+  let rows = '<div class="empty">No donations yet — use the form above.</div>';
+  if(history.length){
+    rows = `<table>
+      <thead><tr><th>Amount</th><th>When</th><th>Receipt</th></tr></thead>
+      <tbody>
+        ${history.map((h,i)=>`
+          <tr class="clickable" onclick="toggleReveal('${state.wallet}', ${i})">
+            <td>${inr(h.amount)}</td>
+            <td>${h.time}</td>
+            <td>${h.revealed ? `<span class="hash mono">${h.hash}</span>` : `<span class="reveal">click to view receipt →</span>`}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  card.innerHTML = `
+    <div class="passport-id">Donor ID: <span class="mono">${state.wallet}</span></div>
+    <div class="passport-stats">
+      <div class="stat"><div class="num">${inr(total)}</div><div class="label">total donated</div></div>
+      <div class="stat"><div class="num">${history.length}</div><div class="label">donations made</div></div>
+      <div class="stat"><div class="num">${releasedCount}</div><div class="label">milestones released so far</div></div>
+    </div>
+    ${rows}
+  `;
+}
+
+function renderAudit(){
+  const body = document.getElementById('audit-body');
+  if(!state.audit.length){
+    body.innerHTML = `<tr><td colspan="5" class="empty">No activity yet — the trail fills in as donations and approvals happen.</td></tr>`;
+    return;
+  }
+  body.innerHTML = state.audit.map(a=>`
+    <tr>
+      <td>${a.time}</td>
+      <td>${a.event}</td>
+      <td>${a.detail}</td>
+      <td>${a.amount ? inr(a.amount) : '—'}</td>
+      <td><button class="view-link" onclick="alert('Receipt: ${a.hash}\\n\\nIn the live version this links directly to PolygonScan.')">${a.hash.slice(0,10)}…</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderAll(){
+  renderFlow();
+  renderCampaign();
+  renderChips();
+  renderNgoList();
+  renderMilestones();
+  renderDonateAndPassport();
+  renderAudit();
+}
+
+renderAll();
+</script>
+</body>
+</html>

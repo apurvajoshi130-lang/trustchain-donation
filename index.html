@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aashray Relief Foundation — Transparent Donation Tracking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#142B3D; --ink-soft:#3B5166; --paper:#F5F3EC; --paper-raised:#FFFFFF;
+    --line:#D9D6C8; --teal:#2F6F62; --teal-soft:#E4EEEB; --amber:#B9812C;
+    --amber-soft:#F3E8D5; --clay:#9B4A3F; --clay-soft:#F1E1DE;
+  }
+  *{box-sizing:border-box;}
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans',sans-serif; line-height:1.55; }
+  h1,h2,h3{ font-family:'Source Serif 4',serif; font-weight:600; margin:0; }
+  .mono{ font-family:'IBM Plex Mono',monospace; }
+  header{ position:sticky; top:0; z-index:10; background:var(--ink); color:var(--paper); padding:14px clamp(16px,4vw,48px); display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; border-bottom:1px solid #24374A; }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand h1{ font-size:19px; color:var(--paper); }
+  .brand span{ font-size:12.5px; color:#9FB0BD; }
+  .headnav{ display:flex; gap:18px; flex-wrap:wrap; }
+  .headnav a{ color:#B9C7D2; text-decoration:none; font-size:13.5px; }
+  .headnav a:hover{ color:var(--paper); }
+  #wallet-btn{ background:var(--teal); border:1px solid var(--teal); color:#0D1B15; padding:9px 16px; border-radius:3px; font-size:13.5px; font-weight:600; cursor:pointer; }
+  #wallet-btn.connected{ background:transparent; border-color:#4A5C6B; color:var(--paper); font-weight:500; }
+  main{ max-width:880px; margin:0 auto; padding:0 clamp(16px,4vw,48px) 90px; }
+  section{ padding:44px 0; border-bottom:1px solid var(--line); }
+  section:last-child{ border-bottom:none; }
+  .eyebrow{ font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .lede{ max-width:64ch; color:var(--ink-soft); font-size:15.5px; margin:8px 0 0; }
+  .campaign-card{ background:var(--paper-raised); border:1px solid var(--line); border-radius:5px; padding:26px 28px; margin-top:18px; }
+  .campaign-title{ font-size:22px; }
+  .campaign-ngo{ font-size:13.5px; color:var(--ink-soft); margin-top:4px; }
+  .stat-row{ display:flex; gap:28px; flex-wrap:wrap; margin:20px 0 10px; }
+  .stat .num{ font-family:'Source Serif 4',serif; font-size:24px; font-weight:600; }
+  .stat .label{ font-size:12px; color:var(--ink-soft); }
+  .bar{ height:8px; background:var(--line); border-radius:4px; overflow:hidden; margin-top:6px; }
+  .bar-fill{ height:100%; background:var(--teal); transition:width .3s; }
+  .flow{ display:flex; align-items:center; gap:6px; margin-top:22px; overflow-x:auto; padding-bottom:4px; }
+  .flow-step{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .flow-num{ width:26px; height:26px; border-radius:50%; background:var(--ink); color:var(--paper); display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; flex-shrink:0; }
+  .flow-label{ font-size:13px; color:var(--ink-soft); white-space:nowrap; }
+  .flow-arrow{ color:var(--line); font-size:16px; margin:0 4px; flex-shrink:0; }
+  .milestone{ background:var(--paper-raised); border:1px solid var(--line); border-radius:5px; padding:20px 22px; margin-bottom:14px; }
+  .milestone-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  .status-dot{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:7px; }
+  .status-dot.locked{ background:var(--ink-soft); opacity:.4; }
+  .status-dot.evidence{ background:var(--amber); }
+  .status-dot.verified, .status-dot.released{ background:var(--teal); }
+  .status-text{ font-size:13px; color:var(--ink-soft); }
+  .milestone-title{ font-size:16.5px; }
+  .milestone-amt{ font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--ink-soft); text-align:right; }
+  .fine{ font-size:13px; color:var(--ink-soft); }
+  .proof-line{ font-size:13px; margin-top:8px; color:var(--ink-soft); }
+  .actions{ display:flex; gap:9px; margin-top:14px; flex-wrap:wrap; align-items:center; }
+  button.act{ font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:500; padding:8px 14px; border-radius:3px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer; }
+  button.act.secondary{ background:transparent; color:var(--ink); }
+  button.act:disabled{ opacity:.35; cursor:not-allowed; }
+  button.act:hover:not(:disabled){ opacity:.85; }
+  .ai-result{ margin-top:10px; font-size:13px; background:var(--paper); border:1px solid var(--line); border-radius:3px; padding:9px 12px; }
+  .ai-result.error{ background:var(--clay-soft); color:var(--clay); }
+  form.donate-form{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; align-items:center; }
+  input[type=number]{ font-family:'IBM Plex Mono',monospace; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:3px; background:var(--paper-raised); color:var(--ink); width:150px; }
+  input[type=file]{ font-size:12.5px; }
+  .passport{ background:var(--paper-raised); border:1px solid var(--line); border-radius:5px; padding:22px 24px; margin-top:16px; }
+  .passport-id{ font-size:13px; color:var(--ink-soft); margin-bottom:14px; }
+  .passport-stats{ display:flex; gap:26px; flex-wrap:wrap; margin-bottom:16px; }
+  .passport-stats .num{ font-family:'Source Serif 4',serif; font-size:21px; font-weight:600; }
+  .passport-stats .label{ font-size:11.5px; color:var(--ink-soft); }
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  th{ text-align:left; font-weight:500; color:var(--ink-soft); font-size:12px; padding:8px 10px; border-bottom:1px solid var(--line); }
+  td{ padding:10px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  .hash{ color:var(--ink-soft); }
+  .empty{ color:var(--ink-soft); font-size:14px; padding:16px 0; }
+  .no-wallet-note{ font-size:13px; color:var(--ink-soft); background:var(--teal-soft); border-radius:4px; padding:10px 14px; margin-top:16px; }
+  .tech-note{ font-size:12px; color:var(--ink-soft); margin-top:14px; }
+  .view-link{ background:none; border:none; color:var(--teal); font-size:12.5px; cursor:pointer; padding:0; text-decoration:underline; }
+  .server-badge{ font-size:11.5px; padding:3px 9px; border-radius:20px; background:var(--teal-soft); color:var(--teal); }
+  @media (max-width:600px){ .milestone-head{ flex-direction:column; } .milestone-amt{ text-align:left; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Aashray Relief Foundation</h1>
+    <span>Transparent Donation &amp; Fund Tracking · <span class="server-badge" id="server-badge">connecting…</span></span>
+  </div>
+  <nav class="headnav">
+    <a href="#campaign">Campaign</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#milestones">Milestones</a>
+    <a href="#donor">Donate</a>
+    <a href="#audit">Audit Trail</a>
+  </nav>
+  <button id="wallet-btn" onclick="connectWallet()">Connect Wallet</button>
+</header>
+
+<main>
+  <section id="campaign">
+    <div class="eyebrow">Current campaign · shared live across everyone viewing this server</div>
+    <div class="campaign-card">
+      <div class="campaign-title">Kolhapur Flood Relief</div>
+      <div class="campaign-ngo">Run by Aashray Relief Foundation · Goal ₹5,00,000</div>
+      <div class="stat-row">
+        <div class="stat"><div class="num" id="stat-raised">₹0</div><div class="label">raised</div></div>
+        <div class="stat"><div class="num" id="stat-pct">0%</div><div class="label">of goal</div></div>
+        <div class="stat"><div class="num" id="stat-donors">0</div><div class="label">donors</div></div>
+      </div>
+      <div class="bar"><div class="bar-fill" id="campaign-bar" style="width:0%"></div></div>
+    </div>
+  </section>
+
+  <section id="how-it-works">
+    <div class="eyebrow">How your donation is protected</div>
+    <h2 style="font-size:22px;">Money moves only when proof does.</h2>
+    <p class="lede">Your donation isn't handed over right away. It's held safely until the NGO proves what it was spent on, an AI does a real first-pass check on the evidence, and a person confirms it — only then does money move. This page talks to a live backend server, so every donor sees the same shared, real-time state.</p>
+    <div class="flow" id="flow-diagram"></div>
+  </section>
+
+  <section id="milestones">
+    <div class="eyebrow">Where the money goes</div>
+    <h2 style="font-size:22px;">Milestone verification</h2>
+    <p class="lede">Upload a real photo as evidence and run the actual AI check — it's a live call to a vision model, not a canned number.</p>
+    <div id="milestones-list" style="margin-top:20px;"></div>
+  </section>
+
+  <section id="donor">
+    <div class="eyebrow">Give &amp; track</div>
+    <h2 style="font-size:22px;">Donate</h2>
+    <p class="lede">Connect a wallet to donate and get your own Donor Passport.</p>
+    <div id="donate-wallet-status" class="no-wallet-note">You have not connected a wallet yet — click "Connect Wallet" at the top of the page to start.</div>
+    <form class="donate-form" onsubmit="handleDonate(event)">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:15px;">₹</span>
+      <input type="number" id="donate-amount" min="100" step="100" placeholder="500" required>
+      <button class="act" type="submit">Donate</button>
+    </form>
+    <h3 style="font-size:17px; margin-top:30px;">Donor Passport</h3>
+    <div class="passport" id="passport-card"></div>
+  </section>
+
+  <section id="audit">
+    <div class="eyebrow">Visible to everyone — no wallet needed</div>
+    <h2 style="font-size:22px;">Public audit trail</h2>
+    <p class="lede">Every donation, proof, approval, rejection and release, logged permanently on the server.</p>
+    <div style="overflow-x:auto; margin-top:18px;">
+      <table>
+        <thead><tr><th>Time</th><th>Event</th><th>Detail</th><th>Amount</th><th>Receipt</th></tr></thead>
+        <tbody id="audit-body"></tbody>
+      </table>
+    </div>
+    <p class="tech-note">This demo's transaction hashes are simulated for reliability, but the campaign data itself is real and shared: it lives on this Node.js backend, not in your browser, so anyone opening this same server sees identical live state. Evidence screening calls a real Gemini vision model. The Solidity smart contract (donate / verifyMilestone / releaseFunds) implementing this same logic on Polygon Amoy is included separately in the project files.</p>
+  </section>
+</main>
+
+<script>
+const GOAL = 500000;
+let wallet = localStorage.getItem('trustchain_wallet') || null;
+let latestState = null;
+
+function inr(n){ return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+async function api(path, opts){
+  const res = await fetch(path, opts);
+  const data = await res.json();
+  if(!res.ok){ throw new Error(data.error || 'Request failed'); }
+  return data;
+}
+
+function fakeAddress(){
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return '0x' + Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,8) + '…' + Math.random().toString(16).slice(2,6);
+}
+
+function connectWallet(){
+  if(wallet){
+    wallet = null;
+    localStorage.removeItem('trustchain_wallet');
+  } else {
+    wallet = fakeAddress();
+    localStorage.setItem('trustchain_wallet', wallet);
+  }
+  render();
+}
+
+async function handleDonate(e){
+  e.preventDefault();
+  if(!wallet){ alert('Connect a wallet first using the button at the top.'); return; }
+  const amt = parseFloat(document.getElementById('donate-amount').value);
+  if(!amt || amt <= 0) return;
+  try{
+    const data = await api('/api/donate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ wallet, amount: amt })
+    });
+    latestState = data;
+    document.getElementById('donate-amount').value = '';
+    render();
+  }catch(err){ alert('Donation failed: ' + err.message); }
+}
+
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function submitEvidence(id){
+  const input = document.getElementById('evidence-file-' + id);
+  const file = input?.files?.[0];
+  if(!file){ alert('Choose a photo first.'); return; }
+  try{
+    const base64 = await fileToBase64(file);
+    const data = await api('/api/evidence/' + id, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ imageBase64: base64, mimeType: file.type })
+    });
+    latestState = data;
+    render();
+  }catch(err){ alert('Could not submit evidence: ' + err.message); }
+}
+
+async function runAiScreen(id){
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+  try{
+    const data = await api('/api/ai-screen/' + id, { method:'POST' });
+    latestState = data;
+    render();
+  }catch(err){
+    alert('AI screening failed: ' + err.message + '\n\nMake sure GEMINI_API_KEY is set on the server (see README) and your laptop has internet access.');
+  }
+}
+
+async function verifyMilestone(id){
+  try{ latestState = await api('/api/verify/' + id, { method:'POST' }); render(); }
+  catch(err){ alert(err.message); }
+}
+async function rejectMilestone(id){
+  try{ latestState = await api('/api/reject/' + id, { method:'POST' }); render(); }
+  catch(err){ alert(err.message); }
+}
+async function releaseFunds(id){
+  try{ latestState = await api('/api/release/' + id, { method:'POST' }); render(); }
+  catch(err){ alert(err.message); }
+}
+
+function milestoneStatus(m){
+  if(m.released) return 'released';
+  if(m.verified) return 'verified';
+  if(m.evidenceImage) return 'evidence';
+  return 'locked';
+}
+function statusText(s, m){
+  if(s === 'locked' && m.rejectionCount) return 'Locked — awaiting resubmission after rejection';
+  return { locked:'Locked — awaiting proof', evidence:'Proof submitted — pending check', verified:'Verified — ready for release', released:'Released' }[s];
+}
+
+function renderFlow(){
+  const steps = ['Donate','Milestone','Verify','Release','Audit'];
+  document.getElementById('flow-diagram').innerHTML = steps.map((s,i)=>`
+    <div class="flow-step"><div class="flow-num">${i+1}</div><div class="flow-label">${s}</div></div>
+    ${i < steps.length-1 ? '<span class="flow-arrow">→</span>' : ''}
+  `).join('');
+}
+
+function renderCampaign(st){
+  const pct = Math.min(100, Math.round((st.state.totalDonated / GOAL) * 100));
+  document.getElementById('stat-raised').textContent = inr(st.state.totalDonated);
+  document.getElementById('stat-pct').textContent = pct + '%';
+  document.getElementById('stat-donors').textContent = Object.keys(st.state.donors).filter(a=>st.state.donors[a].length).length;
+  document.getElementById('campaign-bar').style.width = pct + '%';
+}
+
+function sumReleasedUpTo(st, id){
+  return st.state.milestones.filter(m=>m.id<id && m.released).reduce((a,m)=>a+m.target,0);
+}
+
+function milestoneCard(st, m){
+  const status = milestoneStatus(m);
+  const available = Math.min(st.poolBalance + sumReleasedUpTo(st, m.id), m.target);
+  const pct = Math.min(100, Math.round((available / m.target) * 100));
+  const amtLine = m.released ? inr(m.target) + ' released' : available > 0 ? inr(available) + ' of ' + inr(m.target) + ' raised' : inr(m.target) + ' needed';
+  return `
+    <div class="milestone">
+      <div class="milestone-head">
+        <div>
+          <div class="milestone-title"><span class="status-dot ${status}"></span>${m.title}</div>
+          <div class="status-text" style="margin-top:4px;">${statusText(status, m)}</div>
+        </div>
+        <div class="milestone-amt">${amtLine}</div>
+      </div>
+      <p class="fine" style="margin:10px 0 0;">${m.desc}</p>
+      <div class="bar" style="margin-top:10px;"><div class="bar-fill" style="width:${pct}%"></div></div>
+      ${m.rejectionCount ? `<div class="proof-line" style="color:var(--clay);">Previously rejected ${m.rejectionCount}× — last reason: "${m.lastRejectionReason}". Resubmit below.</div>` : ''}
+      ${m.evidenceImage ? `<div class="proof-line">Proof uploaded ✓ (${m.evidenceMime})</div>` : `<div class="actions"><input type="file" id="evidence-file-${m.id}" accept="image/*"><button class="act secondary" onclick="submitEvidence(${m.id})">Submit proof</button></div>`}
+      ${m.aiScore !== null && m.aiScore !== undefined ? `<div class="ai-result">Real AI check: <strong>${m.aiScore}% legitimacy confidence.</strong> ${m.aiReasoning || ''}</div>` : ''}
+      <div class="actions">
+        ${m.evidenceImage ? `<button class="act secondary" ${m.aiScore!==null && m.aiScore!==undefined ?'disabled':''} onclick="runAiScreen(${m.id})">Run real AI check</button>` : ''}
+        <button class="act secondary" ${(m.aiScore===null || m.aiScore===undefined || m.verified)?'disabled':''} onclick="verifyMilestone(${m.id})">Approve (reviewer)</button>
+        <button class="act secondary" style="border-color:var(--clay); color:var(--clay);" ${(m.aiScore===null || m.aiScore===undefined || m.verified)?'disabled':''} onclick="rejectMilestone(${m.id})">Reject</button>
+        <button class="act" ${(!m.verified || m.released)?'disabled':''} onclick="releaseFunds(${m.id})">Release funds</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderMilestones(st){
+  document.getElementById('milestones-list').innerHTML = st.state.milestones.map(m=>milestoneCard(st, m)).join('');
+}
+
+function renderDonateAndPassport(st){
+  const btn = document.getElementById('wallet-btn');
+  const statusEl = document.getElementById('donate-wallet-status');
+  if(wallet){
+    btn.textContent = wallet;
+    btn.classList.add('connected');
+    statusEl.style.display = 'none';
+  } else {
+    btn.textContent = 'Connect Wallet';
+    btn.classList.remove('connected');
+    statusEl.style.display = 'block';
+  }
+  const card = document.getElementById('passport-card');
+  if(!wallet){
+    card.innerHTML = '<div class="empty">Connect a wallet to see your Donor Passport here.</div>';
+    return;
+  }
+  const history = st.state.donors[wallet] || [];
+  const total = history.reduce((a,h)=>a+h.amount,0);
+  const releasedCount = st.state.milestones.filter(m=>m.released).length;
+  let rows = '<div class="empty">No donations yet — use the form above.</div>';
+  if(history.length){
+    rows = `<table><thead><tr><th>Amount</th><th>When</th><th>Receipt</th></tr></thead><tbody>
+      ${history.map(h=>`<tr><td>${inr(h.amount)}</td><td>${h.time}</td><td class="hash mono">${h.hash.slice(0,14)}…</td></tr>`).join('')}
+    </tbody></table>`;
+  }
+  card.innerHTML = `
+    <div class="passport-id">Donor ID: <span class="mono">${wallet}</span></div>
+    <div class="passport-stats">
+      <div class="stat"><div class="num">${inr(total)}</div><div class="label">total donated</div></div>
+      <div class="stat"><div class="num">${history.length}</div><div class="label">donations made</div></div>
+      <div class="stat"><div class="num">${releasedCount}</div><div class="label">milestones released so far</div></div>
+    </div>
+    ${rows}
+  `;
+}
+
+function renderAudit(st){
+  const body = document.getElementById('audit-body');
+  if(!st.state.audit.length){
+    body.innerHTML = `<tr><td colspan="5" class="empty">No activity yet.</td></tr>`;
+    return;
+  }
+  body.innerHTML = st.state.audit.map(a=>`
+    <tr><td>${a.time}</td><td>${a.event}</td><td>${a.detail}</td><td>${a.amount ? inr(a.amount) : '—'}</td>
+    <td class="hash mono">${a.hash.slice(0,10)}…</td></tr>
+  `).join('');
+}
+
+function render(){
+  if(!latestState) return;
+  renderFlow();
+  renderCampaign(latestState);
+  renderMilestones(latestState);
+  renderDonateAndPassport(latestState);
+  renderAudit(latestState);
+}
+
+async function init(){
+  try{
+    latestState = await api('/api/state');
+    document.getElementById('server-badge').textContent = 'live backend connected';
+    render();
+  }catch(err){
+    document.getElementById('server-badge').textContent = 'backend not reachable';
+    document.getElementById('milestones-list').innerHTML = '<div class="empty">Could not reach the backend server. Make sure it is running (node server.js) and you opened this page from that server, e.g. http://localhost:3000.</div>';
+  }
+}
+init();
+</script>
+</body>
+</html>
